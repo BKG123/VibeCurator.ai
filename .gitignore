@@ -10,3 +10,6 @@ wheels/
 .venv
 
 .env
+
+# Qdrant vector database storage (runtime data)
+qdrant_storage/
