@@ -2617,6 +2617,7 @@ dependencies = [
     { name = "datasets" },
     { name = "openai-agents" },
     { name = "pip" },
+    { name = "python-dotenv" },
     { name = "qdrant-client" },
     { name = "sentence-transformers" },
     { name = "tqdm" },
@@ -2624,12 +2625,13 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "datasets", specifier = ">=4.5.0" },
-    { name = "openai-agents", specifier = ">=0.6.9" },
+    { name = "datasets", specifier = "==4.5.0" },
+    { name = "openai-agents", specifier = "==0.6.9" },
     { name = "pip", specifier = "==25.3" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "qdrant-client", specifier = "==1.16.2" },
-    { name = "sentence-transformers", specifier = ">=5.2.0" },
-    { name = "tqdm", specifier = ">=4.66.0" },
+    { name = "sentence-transformers", specifier = "==5.2.0" },
+    { name = "tqdm", specifier = ">=4.66.3" },
 ]
 
 [[package]]
