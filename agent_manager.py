@@ -1,11 +1,18 @@
 """Agent management and interaction logic."""
 
+import logging
 from typing import AsyncIterator
-from agents import Agent, Runner
+from agents import Agent, Runner, RunItemStreamEvent
 from openai.types.responses import ResponseTextDeltaEvent
 from dotenv import load_dotenv
+from tools import search_songs, search_songs_by_artist, get_collection_stats
+from prompts import AGENT_INSTRUCTIONS
 
 load_dotenv()
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class AgentManager:
@@ -14,26 +21,47 @@ class AgentManager:
     def __init__(
         self,
         name: str = "VibeCurator Assistant",
-        instructions: str = "You are a helpful assistant specialized in music curation and recommendations.",
-        model: str = "gpt-4o",
+        instructions: str = AGENT_INSTRUCTIONS,
+        model: str = "gpt-5-nano",
     ):
-        self.agent = Agent(name=name, instructions=instructions, model=model)
+        self.agent = Agent(
+            name=name,
+            instructions=instructions,
+            model=model,
+            tools=[search_songs, search_songs_by_artist, get_collection_stats],
+        )
 
-    async def stream_response(self, prompt: str) -> AsyncIterator[str]:
-        """Stream agent response token by token.
+    async def stream_response(self, prompt: str) -> AsyncIterator[dict]:
+        """Stream agent response with events including tool calls.
 
         Args:
             prompt: User input prompt
 
         Yields:
-            Text deltas as they arrive from the LLM
+            Dict with 'type' and 'content' keys for text deltas and tool calls
         """
+        print(f"[DEBUG] Starting stream_response for prompt: {prompt[:50]}...")
         result = Runner.run_streamed(self.agent, prompt)
         async for event in result.stream_events():
+            # Handle text deltas
             if event.type == "raw_response_event" and isinstance(
                 event.data, ResponseTextDeltaEvent
             ):
-                yield event.data.delta
+                yield {"type": "text", "content": event.data.delta}
+
+            # Handle tool calls
+            elif isinstance(event, RunItemStreamEvent) and event.name == "tool_called":
+                tool_name = (
+                    event.item.raw_item.name
+                    if hasattr(event.item, "raw_item")
+                    else "Unknown"
+                )
+                yield {"type": "tool_call", "content": tool_name}
+
+            # Handle tool outputs
+            elif isinstance(event, RunItemStreamEvent) and event.name == "tool_output":
+                print("[DEBUG] Tool output received")
+                yield {"type": "tool_output", "content": "completed"}
 
     async def get_response(self, prompt: str) -> str:
         """Get complete agent response (non-streaming).
