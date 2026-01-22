@@ -40,7 +40,6 @@ class AgentManager:
         Yields:
             Dict with 'type' and 'content' keys for text deltas and tool calls
         """
-        print(f"[DEBUG] Starting stream_response for prompt: {prompt[:50]}...")
         result = Runner.run_streamed(self.agent, prompt)
         async for event in result.stream_events():
             # Handle text deltas
@@ -60,7 +59,6 @@ class AgentManager:
 
             # Handle tool outputs
             elif isinstance(event, RunItemStreamEvent) and event.name == "tool_output":
-                print("[DEBUG] Tool output received")
                 yield {"type": "tool_output", "content": "completed"}
 
     async def get_response(self, prompt: str) -> str:

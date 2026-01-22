@@ -38,10 +38,15 @@ python ingest_spotify.py --limit 5000
 python ingest_spotify.py
 ```
 
-### 4. Test Retrieval
+### 4. Run the App
 
 ```bash
 python main.py
+```
+
+Or directly:
+```bash
+streamlit run app.py
 ```
 
 ## Usage
@@ -49,11 +54,11 @@ python main.py
 ### Programmatic Search
 
 ```python
-from main import retrieve_similar
+from tools import search_songs
 
-results = retrieve_similar("upbeat workout music", top_k=10)
-for hit in results:
-    print(f"{hit.score:.3f} - {hit.payload['artist']}: {hit.payload['song']}")
+results = search_songs("upbeat workout music", limit=10)
+for song in results:
+    print(f"{song['score']:.3f} - {song['artist']}: {song['song']}")
 ```
 
 ### Re-ingest Data

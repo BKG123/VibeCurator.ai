@@ -78,8 +78,6 @@ if prompt := st.chat_input("Ask me anything..."):
             )
 
             async for event in st.session_state.agent_manager.stream_response(prompt):
-                print(f"[APP DEBUG] Received event: {event}")
-
                 if event["type"] == "text":
                     if not started:
                         started = True
@@ -104,9 +102,6 @@ if prompt := st.chat_input("Ask me anything..."):
                     tool_name = event["content"]
                     tool_calls.append(f"`{tool_name}`")
                     active_tools.append(f"`{tool_name}`")
-                    print(
-                        f"[APP DEBUG] Tool call added: {tool_name}, Total tools: {tool_calls}"
-                    )
 
                     # Show animated tool call
                     display_text = (
