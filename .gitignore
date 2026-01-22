@@ -13,3 +13,8 @@ wheels/
 
 # Qdrant vector database storage (runtime data)
 qdrant_storage/
+
+# YouTube API credentials and tokens
+youtube_credentials.json
+youtube_token.pickle
+.cache

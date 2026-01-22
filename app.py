@@ -77,7 +77,10 @@ if prompt := st.chat_input("Ask me anything..."):
                 '<div class="thinking">🎵 Thinking...</div>', unsafe_allow_html=True
             )
 
-            async for event in st.session_state.agent_manager.stream_response(prompt):
+            async for event in st.session_state.agent_manager.stream_response(
+                prompt,
+                history=st.session_state.messages[:-1],  # Exclude current user message
+            ):
                 if event["type"] == "text":
                     if not started:
                         started = True

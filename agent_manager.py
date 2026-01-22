@@ -5,7 +5,12 @@ from typing import AsyncIterator
 from agents import Agent, Runner, RunItemStreamEvent
 from openai.types.responses import ResponseTextDeltaEvent
 from dotenv import load_dotenv
-from tools import search_songs, search_songs_by_artist, get_collection_stats
+from tools import (
+    search_songs,
+    search_songs_by_artist,
+    get_collection_stats,
+    create_youtube_playlist,
+)
 from prompts import AGENT_INSTRUCTIONS
 
 load_dotenv()
@@ -28,19 +33,32 @@ class AgentManager:
             name=name,
             instructions=instructions,
             model=model,
-            tools=[search_songs, search_songs_by_artist, get_collection_stats],
+            tools=[
+                search_songs,
+                search_songs_by_artist,
+                get_collection_stats,
+                create_youtube_playlist,
+            ],
         )
 
-    async def stream_response(self, prompt: str) -> AsyncIterator[dict]:
+    async def stream_response(self, prompt: str, history: list[dict] = None) -> AsyncIterator[dict]:
         """Stream agent response with events including tool calls.
 
         Args:
             prompt: User input prompt
+            history: List of previous messages [{"role": "user", "content": "..."}, ...]
 
         Yields:
             Dict with 'type' and 'content' keys for text deltas and tool calls
         """
-        result = Runner.run_streamed(self.agent, prompt)
+        # Build messages list with history
+        messages = []
+        if history:
+            for msg in history:
+                messages.append({"role": msg["role"], "content": msg["content"]})
+        messages.append({"role": "user", "content": prompt})
+        
+        result = Runner.run_streamed(self.agent, messages)
         async for event in result.stream_events():
             # Handle text deltas
             if event.type == "raw_response_event" and isinstance(
@@ -61,16 +79,24 @@ class AgentManager:
             elif isinstance(event, RunItemStreamEvent) and event.name == "tool_output":
                 yield {"type": "tool_output", "content": "completed"}
 
-    async def get_response(self, prompt: str) -> str:
+    async def get_response(self, prompt: str, history: list[dict] = None) -> str:
         """Get complete agent response (non-streaming).
 
         Args:
             prompt: User input prompt
+            history: List of previous messages [{"role": "user", "content": "..."}, ...]
 
         Returns:
             Complete response text
         """
-        result = await Runner.run(self.agent, prompt)
+        # Build messages list with history
+        messages = []
+        if history:
+            for msg in history:
+                messages.append({"role": msg["role"], "content": msg["content"]})
+        messages.append({"role": "user", "content": prompt})
+        
+        result = await Runner.run(self.agent, messages)
         return result.final_output
 
     @property
