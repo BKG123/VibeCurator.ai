@@ -18,3 +18,8 @@ qdrant_storage/
 youtube_credentials.json
 youtube_token.pickle
 .cache
+
+# Discovery pipeline data
+song_tracker.db
+discovered_songs*.json
+logs/
