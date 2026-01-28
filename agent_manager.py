@@ -27,7 +27,7 @@ class AgentManager:
         self,
         name: str = "VibeCurator Assistant",
         instructions: str = AGENT_INSTRUCTIONS,
-        model: str = "gpt-5-nano",
+        model: str = "gpt-5-mini",
     ):
         self.agent = Agent(
             name=name,
@@ -41,7 +41,9 @@ class AgentManager:
             ],
         )
 
-    async def stream_response(self, prompt: str, history: list[dict] = None) -> AsyncIterator[dict]:
+    async def stream_response(
+        self, prompt: str, history: list[dict] = None
+    ) -> AsyncIterator[dict]:
         """Stream agent response with events including tool calls.
 
         Args:
@@ -57,7 +59,7 @@ class AgentManager:
             for msg in history:
                 messages.append({"role": msg["role"], "content": msg["content"]})
         messages.append({"role": "user", "content": prompt})
-        
+
         result = Runner.run_streamed(self.agent, messages)
         async for event in result.stream_events():
             # Handle text deltas
@@ -95,7 +97,7 @@ class AgentManager:
             for msg in history:
                 messages.append({"role": msg["role"], "content": msg["content"]})
         messages.append({"role": "user", "content": prompt})
-        
+
         result = await Runner.run(self.agent, messages)
         return result.final_output
 
